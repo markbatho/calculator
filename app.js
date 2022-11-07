@@ -1,30 +1,102 @@
 const currentDisplay = document.querySelector('.current');
 const historyDisplay = document.querySelector('.history');
-const numeralButtons = document.querySelectorAll('.numeral');
+const numeralButtons = document.querySelectorAll('.numerals');
+const operatorButtons = document.querySelectorAll('.operators');
 const clearBtn = document.querySelector('#clear');
 const deleteBtn = document.querySelector('#delete');
 
-clearBtn.addEventListener('click', clearDisplay);
+clearBtn.addEventListener('click', reset);
 deleteBtn.addEventListener('click', deleteLast);
 
 Array.from(numeralButtons).forEach(button => {
-  button.addEventListener('click', appendToDisplay);
+  button.addEventListener('click', appendNumeral);
 });
 
-function deleteLast() {
-  currentDisplay.textContent = currentDisplay.textContent.slice(
-    0,
-    currentDisplay.textContent.length - 1
-  );
+Array.from(operatorButtons).forEach(button => {
+  button.addEventListener('click', selectOperator);
+});
+
+
+// Operation
+let operandStack = [];
+let operatorStack = [];
+
+// Append to display
+function selectOperator() {
+  operandStack.push(+currentDisplay.textContent);
+
+  if (this.textContent === '=') {
+    let result = calculate(operandStack, operatorStack[operatorStack.length - 1]);
+    operandStack = [];
+    currentDisplay.textContent = result;
+    return;
+  }
+
+  operatorStack = [];
+  operatorStack.push(this.textContent);
+  
+  clearCurrentDisplay();
+  
+  if (operandStack.length > 1) {
+    let result = calculate(operandStack, operatorStack[operatorStack.length - 1]);
+    operandStack = [];
+    operandStack.push(result);
+  }
+
+  historyDisplay.textContent = operandStack[0] + ' ' + operatorStack[0];
 }
 
+function appendNumeral() {
+  currentDisplay.textContent += this.textContent.trim();
+}
+
+// Reset
+function reset() {
+  operandStack = [];
+  operatorStack = [];
+  clearHistory();
+  clearCurrentDisplay();
+}
+
+// Clear history
+function clearHistory() {
+  historyDisplay.textContent = '';
+}
+
+// Clear displays
 function clearDisplay() {
   currentDisplay.textContent = '';
   historyDisplay.textContent = '';
 }
 
-function appendToDisplay() {
-  currentDisplay.textContent += Number.parseInt(this.textContent);
+function clearCurrentDisplay() {
+  currentDisplay.textContent = '';
+}
+
+function deleteLast() {
+  currentDisplay.textContent = currentDisplay.textContent.slice(0,-1);
+}
+
+// Math
+function calculate(operandStack, operator) {
+  return operandStack.reduce((prev, current) => {
+    return operate(prev, current, operator);
+  });
+}
+
+function operate(x, y, operator) {
+  switch (operator) {
+    case '+':
+      return add(x, y);
+    case '-':
+      return subtract(x, y);
+    case '×':
+      return multiply(x, y);
+    case '÷':
+      return divide(x, y);
+    default:
+      return null;
+  }
 }
 
 function add(x, y) {
@@ -41,23 +113,4 @@ function multiply(x, y) {
 
 function divide(x, y) {
   return x / y;
-}
-
-function operate(x, y, operator) {
-  let result = null;
-  switch (operator) {
-    case '+':
-      result = add(x, y);
-      break;
-    case '-':
-      result = subtract(x, y);
-      break;
-    case '*':
-      result = multiply(x, y);
-      break;
-    case '/':
-      result = divide(x, y);
-      break;
-  }
-  return result;
 }
