@@ -35,18 +35,13 @@ function selectOperator() {
 
   // operatorStack = [];
   operatorStack.push(this.textContent);
-  console.log(operatorStack);
   
   clearCurrentDisplay();
   
   if (operandStack.length > 1) {
     let result = calculate(operandStack, operatorStack[0]);
-
-    console.log('calc -> ' + result, operandStack, operatorStack);
-
     operandStack = [];
     operandStack.push(result);
-
     operatorStack.shift();
   }
 
