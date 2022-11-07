@@ -28,22 +28,29 @@ function selectOperator() {
   if (this.textContent === '=') {
     let result = calculate(operandStack, operatorStack[operatorStack.length - 1]);
     operandStack = [];
+    operatorStack = [];
     currentDisplay.textContent = result;
     return;
   }
 
-  operatorStack = [];
+  // operatorStack = [];
   operatorStack.push(this.textContent);
+  console.log(operatorStack);
   
   clearCurrentDisplay();
   
   if (operandStack.length > 1) {
-    let result = calculate(operandStack, operatorStack[operatorStack.length - 1]);
+    let result = calculate(operandStack, operatorStack[0]);
+
+    console.log('calc -> ' + result, operandStack, operatorStack);
+
     operandStack = [];
     operandStack.push(result);
+
+    operatorStack.shift();
   }
 
-  historyDisplay.textContent = operandStack[0] + ' ' + operatorStack[0];
+  historyDisplay.textContent = operandStack[0] + ' ' + operatorStack;
 }
 
 function appendNumeral() {
