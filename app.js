@@ -4,9 +4,12 @@ const numeralButtons = document.querySelectorAll('.numerals');
 const operatorButtons = document.querySelectorAll('.operators');
 const clearBtn = document.querySelector('#clear');
 const deleteBtn = document.querySelector('#delete');
+const float = document.querySelector('#dot');
 
 clearBtn.addEventListener('click', reset);
 deleteBtn.addEventListener('click', deleteLast);
+
+float.addEventListener('click', appendDot);
 
 Array.from(numeralButtons).forEach(button => {
   button.addEventListener('click', appendNumeral);
@@ -21,12 +24,24 @@ Array.from(operatorButtons).forEach(button => {
 let operandStack = [];
 let operatorStack = [];
 
+let error = false;
+
 // Append to display
 function selectOperator() {
+  if (error) {
+    error = false;
+    reset();
+  }
+
   operandStack.push(+currentDisplay.textContent);
 
   if (this.textContent === '=') {
     let result = calculate(operandStack, operatorStack[operatorStack.length - 1]);
+
+    if (result === 'Error!') {
+      error = true;
+    }
+
     operandStack = [];
     operatorStack = [];
     currentDisplay.textContent = result;
@@ -49,7 +64,17 @@ function selectOperator() {
 }
 
 function appendNumeral() {
-  currentDisplay.textContent += this.textContent.trim();
+  if (currentDisplay.textContent.length < 14) {
+    currentDisplay.textContent += this.textContent.trim();
+  }
+}
+
+function appendDot() {
+  if (currentDisplay.textContent.includes('.')) {
+    return;
+  }
+
+  currentDisplay.textContent += '.';
 }
 
 // Reset
@@ -79,10 +104,27 @@ function deleteLast() {
   currentDisplay.textContent = currentDisplay.textContent.slice(0,-1);
 }
 
+// Format output
+function formatResult(result) {
+  if (result > 999999999999) {
+    return result.toExponential(4);
+  }
+  return Math.round(result * 100) / 100;
+}
+
 // Math
 function calculate(operandStack, operator) {
   return operandStack.reduce((prev, current) => {
-    return operate(prev, current, operator);
+    console.log(prev, current, operator);
+
+    if (operator === '÷') {
+      if (prev === 0 || current === 0) {
+        return 'Error!';
+      }
+    }
+
+    let result = operate(prev, current, operator);
+    return formatResult(result);
   });
 }
 
